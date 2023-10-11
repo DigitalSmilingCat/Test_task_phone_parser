@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+import os
 
 
 def get_xpath(elm):
@@ -19,23 +20,7 @@ def get_xpath(elm):
     return '/' + xpath
 
 
-def parser(url):
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(options=chrome_options)
-
-    try:
-        driver.get(url)
-        element_to_click = WebDriverWait(driver, 3).\
-            until(ec.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Показать телефон')]")))
-        xpath = get_xpath(element_to_click)
-        button = WebDriverWait(driver, 3).until(ec.element_to_be_clickable((By.XPATH, xpath)))
-        button.click()
-    except:
-        pass
-
+def save_page(url, driver):
     site_name = url.split('://')[1]
     chars_to_change = ['/', '?']
     for char in chars_to_change:
@@ -44,6 +29,8 @@ def parser(url):
     with open(f'saved_pages/{site_name}.html', 'w', encoding="utf-8") as file:
         file.write(driver.page_source)
 
+
+def phone_search(url, driver):
     phone_regex = re.compile(r'\D\+7 ?-? ?\(?\d{3}\)? ?-? ?\d{3} ?-? ?\d{2} ?-? ?\d{2}\D|'
                              r'\D8 ?-? ?\(?\d{3}\)? ?-? ?\d{3} ?-? ?\d{2} ?-? ?\d{2}\D|'
                              r'\D\(\d{4}\) ?\d{2} ?-? ?\d{2} ?-? ?\d{2}\D|'
@@ -61,10 +48,36 @@ def parser(url):
             element = element.replace('+7', '8')
             element = element if len(element) > 7 else '8925'+element
             all_phone_numbers.add(element)
-        output.write(f"{site_name}: {', '.join(all_phone_numbers)}\n")
+        output.write(f"{url}: {', '.join(all_phone_numbers)}\n")
+
+
+def parser(url):
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(options=chrome_options)
+
+    try:
+        driver.get(url)
+        element_to_click = WebDriverWait(driver, 3).\
+            until(ec.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Показать телефон')]")))
+        xpath = get_xpath(element_to_click)
+        button = WebDriverWait(driver, 3).until(ec.element_to_be_clickable((By.XPATH, xpath)))
+        button.click()
+    except:
+        print(f'nothing to click on {url}')
+
+    save_page(url, driver)
+    phone_search(url, driver)
 
 
 def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.exists(script_dir + '/saved_pages'):
+        os.chdir(script_dir)
+        os.makedirs('saved_pages')
+
     with open('input.txt', encoding="utf-8") as file:
         url = file.readline().strip('\n')
         while url:

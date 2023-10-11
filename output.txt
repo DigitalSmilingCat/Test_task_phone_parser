@@ -1,3 +1,6 @@
-hands.ru_company_about_: 84951370720
-repetitors.info: 84955405676
-www.semashko.com: 88007000701, 84992669898, 88002343434
+https://hands.ru/company/about/: 84951370720
+https://repetitors.info: 84955405676
+https://www.semashko.com: 84992669898, 88007000701, 88002343434
+https://hands.ru/company/about/: 84951370720
+https://repetitors.info: 84955405676
+https://www.semashko.com: 88002343434, 88007000701, 84992669898
